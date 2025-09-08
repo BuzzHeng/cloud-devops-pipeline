@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: pass
+      POSTGRES_USER: appuser
+      POSTGRES_DB: appdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_USER: appuser
+      DB_PASS: pass
+      DB_NAME: appdb
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
